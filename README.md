@@ -4,11 +4,11 @@
 
 https://user-images.githubusercontent.com/28970749/225826345-ef7115db-51e4-4b23-aedd-069389b8ae43.mp4
 
-* [Setup](#setup)
-* [Usage](#usage)
+* [설치](#설치)
+* [사용법](#사용법)
   * [Transcribe](#transcribe)
-  * [Output](#output)
-  * [Regrouping Words](#regrouping-words)
+  * [출력](#output)
+  * [단어 재결합(Regrouping Words)](#regrouping-words)
   * [Locating Words](#locating-words)
   * [Boosting Performance](#boosting-performance)
   * [Visualizing Suppression](#visualizing-suppression)
@@ -26,7 +26,7 @@ pip install -U stable-ts
 pip install -U git+https://github.com/jianfch/stable-ts.git
 ```
 
-## Usage
+## 사용법
 커맨드라인에서의 사용법 목록과, 그에 상응하는 파이썬 사용법. 
 
 ### Transcribe
