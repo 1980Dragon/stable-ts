@@ -1,6 +1,6 @@
 # Stabilizing Timestamps for Whisper
 
-This script modifies [OpenAI's Whisper](https://github.com/openai/whisper) to produce more reliable timestamps.
+신뢰도 높은 타임스탬프 산출을 위해 [OpenAI's Whisper](https://github.com/openai/whisper)의 코드를 수정한 스크립트.
 
 https://user-images.githubusercontent.com/28970749/225826345-ef7115db-51e4-4b23-aedd-069389b8ae43.mp4
 
@@ -16,18 +16,18 @@ https://user-images.githubusercontent.com/28970749/225826345-ef7115db-51e4-4b23-
   * [Tips](#tips)
 * [Quick 1.X → 2.X Guide](#quick-1x--2x-guide)
 
-## Setup
+## 설치
 ```
 pip install -U stable-ts
 ```
 
-To install the latest commit:
+최신 커밋 설치:
 ```
 pip install -U git+https://github.com/jianfch/stable-ts.git
 ```
 
 ## Usage
-The following is a list of CLI usages each followed by a corresponding Python usage (if there is one). 
+커맨드라인에서의 사용법 목록과, 그에 상응하는 파이썬 사용법. 
 
 ### Transcribe
 ```commandline
@@ -39,40 +39,40 @@ model = stable_whisper.load_model('base')
 result = model.transcribe('audio.mp3')
 result.to_srt_vtt('audio.srt')
 ```
-Parameters: 
+파라미터: 
 [load_model()](https://github.com/jianfch/stable-ts/blob/d30d0d1cfb5b17b4bf59c3fafcbbd21e37598ab9/stable_whisper/whisper_word_level.py#L637-L652), 
 [transcribe()](https://github.com/jianfch/stable-ts/blob/d30d0d1cfb5b17b4bf59c3fafcbbd21e37598ab9/stable_whisper/whisper_word_level.py#L75-L199)
-### Output
-Stable-ts supports various text output formats.
+### 출력
+Stable-ts는 다양한 포멧의 출력 형식을 지원합니다.
 ```python
 result.to_srt_vtt('audio.srt') #SRT
 result.to_srt_vtt('audio.vtt') #VTT
 result.to_ass('audio.ass') #ASS
 result.to_tsv('audio.tsv') #TSV
 ```
-Parameters: 
+파라미터: 
 [to_srt_vtt()](https://github.com/jianfch/stable-ts/blob/d30d0d1cfb5b17b4bf59c3fafcbbd21e37598ab9/stable_whisper/text_output.py#L267-L291),
 [to_ass()](https://github.com/jianfch/stable-ts/blob/d30d0d1cfb5b17b4bf59c3fafcbbd21e37598ab9/stable_whisper/text_output.py#L401-L434),
 [to_tsv()](https://github.com/jianfch/stable-ts/blob/d30d0d1cfb5b17b4bf59c3fafcbbd21e37598ab9/stable_whisper/text_output.py#L335-L353)
 <br /><br />
-There are word-level and segment-level timestamps. All output formats support them. 
-They also support will both levels simultaneously except TSV. 
-By default, `segment_level` and `word_level` are both `True` for all the formats that support both simultaneously.<br /><br />
-Examples in VTT.
+타임스탬프에는 단어단위(word-level)와 분절단위(segment-level)가 있으며, 모든 출력 포멧이 둘 다를 지원합니다. 
+TSV를 제외하면 두 가지를 동시에 지원하기도 합니다. 
+기본설정상, 단어단위와 분절단위는 동시지원하는 모든 포멧에서 둘 다 'True'로 설정되어 있습니다.<br /><br />
+VTT 형식에서의 예시.
 
-Default: `segment_level=True` + `word_level=True` or `--segment_level true` + `--word_level true` for CLI
+디폴트: `segment_level=True` + `word_level=True` or `--segment_level true` + `--word_level true` for CLI
 ```
 00:00:07.760 --> 00:00:09.900
 But<00:00:07.860> when<00:00:08.040> you<00:00:08.280> arrived<00:00:08.580> at<00:00:08.800> that<00:00:09.000> distant<00:00:09.400> world,
 ```
 
-`segment_level=True`  + `word_level=False` (Note: `segment_level=True` is default)
+`segment_level=True`  + `word_level=False` (노트: `segment_level=True`가 기본 설정임)
 ```
 00:00:07.760 --> 00:00:09.900
 But when you arrived at that distant world,
 ```
 
-`segment_level=False` + `word_level=True` (Note: `word_level=True` is default)
+`segment_level=False` + `word_level=True` (노트: `word_level=True`가 기본 설정임)
 ```
 00:00:07.760 --> 00:00:07.860
 But
@@ -90,30 +90,31 @@ arrived
 ```
 
 #### JSON
-The result can also be saved as a JSON file to preserve all the data for future reprocessing. 
-This is useful for testing different sets of postprocessing arguments without the need to redo inference.
+추후의 재가공을 위해서 모든 데이터를 보존하려면 출력결과를 JSON 형태로 저장할 수 있습니다.
+이 방식은 처음부터 다시 재작업을 하지 않고도 서로 다른 가공방법을 테스트할 수 있으므로 유용합니다.
 ```commandline
 stable-ts audio.mp3 -o audio.json
 ```
 ```python
-# Save result as JSON:
+# JSON 형식으로 저장:
 result.save_as_json('audio.json')
 ```
-Processing JSON file of the results into SRT.
+JSON 파일을 SRT 형식으로 가공.
 ```commandline
 stable-ts audio.json -o audio.srt
 ```
 ```python
-# Load the result:
+# 출력결과를 로드:
 result = stable_whisper.WhisperResult('audio.json')
 result.to_srt_vtt('audio.srt')
 ```
 
-### Regrouping Words
-Stable-ts has a preset for regrouping words into different segments with more natural boundaries. 
-This preset is enabled by `regroup=True` (default). 
-But there are other built-in [regrouping methods](#regrouping-methods) that allow you to customize the regrouping algorithm. 
-This preset is just a predefined combination of those methods.
+### 단어 재결합(Regrouping Words)
+Stable-ts는 더 자연스럽게 나뉘어지도록 다른 분절로 단어를 그룹화하는 프리셋(preset)을 갖추고 있습니다.
+이 프리셋은 `regroup=True` 옵션을 통해 사용할 수 있으며, 기본적으로 켜져 있습니다. 
+
+하지만 이 외에도 다른 [재결합 방식](#regrouping-methods)이 있으며, 재결합 알고리즘을 커스터마이징하도록 해 줍니다.
+위의 프리셋은 단순히 미리 정의된 재결합 방식의 조합 중 하나일 뿐입니다.
 
 https://user-images.githubusercontent.com/28970749/226504985-3d087539-cfa4-46d1-8eb5-7083f235b429.mp4
 
