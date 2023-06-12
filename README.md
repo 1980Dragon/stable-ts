@@ -1,6 +1,7 @@
 # Stabilizing Timestamps for Whisper
 
 신뢰도 높은 타임스탬프 산출을 위해 [OpenAI's Whisper](https://github.com/openai/whisper)의 코드를 수정한 스크립트.
+사용 편의성을 위해서 한국어로 번역해 보았습니다.
 
 https://user-images.githubusercontent.com/28970749/225826345-ef7115db-51e4-4b23-aedd-069389b8ae43.mp4
 
@@ -8,10 +9,10 @@ https://user-images.githubusercontent.com/28970749/225826345-ef7115db-51e4-4b23-
 * [사용법](#사용법)
   * [Transcribe](#transcribe)
   * [출력](#output)
-  * [단어 재결합(Regrouping Words)](#regrouping-words)
+  * [단어 재결합(Regrouping Words)](#단어-재결합(Regrouping-Words))
   * [Locating Words](#locating-words)
-  * [Boosting Performance](#boosting-performance)
-  * [Visualizing Suppression](#visualizing-suppression)
+  * [퍼포먼스 개선](#퍼포먼스-개선)
+  * [억제부위 시각화](#억제부위-시각화)
   * [Encode Comparison](#encode-comparison)
   * [Tips](#tips)
 * [Quick 1.X → 2.X Guide](#quick-1x--2x-guide)
@@ -146,14 +147,14 @@ result2 = model.transcribe('audio.mp3', regroup='sp=.* /。/?/？/,/，_sg=.5_mg
 ```python
 # "and"를 포함하는 모든 문장을 검색
 matches = result.find(r'[^.]+and[^.]+\.')
-# 검색결과가 존재한다면 전부 출력
+# 검색결과가 존재할 경우 전부 출력
 for match in matches:
   print(f'match: {match.text_match}\n'
         f'text: {match.text}\n'
         f'start: {match.start}\n'
         f'end: {match.end}\n')
   
-# 검색결과 중에서 "and" 앞과 뒤에 위치하는 단어를 찾음
+# 검색결과 중에서 "and" 앞과 뒤에 위치하는 단어를 찾아서 출력
 matches = matches.find(r'\s\S+\sand\s\S+')
 for match in matches:
   print(f'match: {match.text_match}\n'
@@ -164,7 +165,7 @@ for match in matches:
 파라미터: 
 [find()](https://github.com/jianfch/stable-ts/blob/d30d0d1cfb5b17b4bf59c3fafcbbd21e37598ab9/stable_whisper/result.py#L898-L913)
 
-### 퍼포먼스 개선(Boosting Performance)
+### 퍼포먼스 개선
 * Stable-ts가 타임스탬프 정확도를 개선하고 환각을 줄이기 위해 사용하는 방법 중 하나는 침묵억제(silence suppression)입니다.
 이 옵션은 `suppress_silence=True`로 사용할 수 있으며 기본적으로 켜져 있습니다. 
 추론과정에서 오디오가 침묵상태이거나 발화(speech)가 없을 경우 상응하는 토큰을 억제하여 
@@ -176,7 +177,7 @@ for match in matches:
 일반적으로 침묵억제 옵션과 같이 사용할 때 최선의 효과를 냅니다.
 비록 Demucs는 음악을 위한 기능이지만, 음악이 포함되어 있지 않다 해도 발화 부분을 격리할 때 효과적입니다.
 
-### Visualizing Suppression
+### 억제부위 시각화
 오디오의 어떤 부분이 억제될지(예를 들어 '침묵' 상태로 인식될지) 시각화해서 볼 수 있습니다.
 요구사항: [Pillow](https://github.com/python-pillow/Pillow) 혹은 [opencv-python](https://github.com/opencv/opencv-python).
 
@@ -234,11 +235,11 @@ stable-ts audio1.mp3 audio2.mp3 audio3.mp3 -o audio1.srt audio2.srt audio3.srt
 - `results_to_sentence_srt(result, 'audio.srt')` → `result.to_srt_vtt('audio.srt', word_level=False)` 
 - `results_to_word_srt(result, 'audio.srt')` → `result.to_srt_vtt('output.srt', segment_level=False)`
 - `results_to_sentence_word_ass(result, 'audio.srt')` → `result.to_ass('output.ass')`
-- there's no need to stabilize segments after inference because they're already stabilized during inference
-- `transcribe()` returns a `WhisperResult` object which can be converted to `dict` with `.to_dict()`. e.g `result.to_dict()`
+- 더 이상 분절 안정화(stabilize segments)를 하지 않아도 됩니다. 추론 과정에서 안정화가 이뤄집니다.
+- `transcribe()`는 `WhisperResult` 오브젝트를 리턴하며, `.to_dict()`를 사용해서 `dict`로 컨버트할 수 있습니다. 예시 `result.to_dict()`
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+이 프로젝트는 MIT License입니다 - 자세한 사항은 [LICENSE](LICENSE)를 확인하세요.
 
 ## Acknowledgments
 Includes slight modification of the original work: [Whisper](https://github.com/openai/whisper)
