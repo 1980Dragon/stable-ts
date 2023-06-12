@@ -66,13 +66,13 @@ VTT 형식에서의 예시.
 But<00:00:07.860> when<00:00:08.040> you<00:00:08.280> arrived<00:00:08.580> at<00:00:08.800> that<00:00:09.000> distant<00:00:09.400> world,
 ```
 
-`segment_level=True`  + `word_level=False` (노트: `segment_level=True`가 기본 설정임)
+`segment_level=True`  + `word_level=False` (주의: `segment_level=True`가 사용됨)
 ```
 00:00:07.760 --> 00:00:09.900
 But when you arrived at that distant world,
 ```
 
-`segment_level=False` + `word_level=True` (노트: `word_level=True`가 기본 설정임)
+`segment_level=False` + `word_level=True` (주의: `word_level=True`가 사용됨)
 ```
 00:00:07.760 --> 00:00:07.860
 But
@@ -119,8 +119,8 @@ Stable-ts는 더 자연스럽게 나뉘어지도록 다른 분절로 단어를 �
 https://user-images.githubusercontent.com/28970749/226504985-3d087539-cfa4-46d1-8eb5-7083f235b429.mp4
 
 ```python
-# The following all functionally equivalent:
-result0 = model.transcribe('audio.mp3', regroup=True) # regroup is True by default
+# 아래의 예시는 기능적으로 동일합니다:
+result0 = model.transcribe('audio.mp3', regroup=True) # 리그룹(regroup) 기본설정이 True입니다.
 result1 = model.transcribe('audio.mp3', regroup=False)
 (
     result1
@@ -131,8 +131,8 @@ result1 = model.transcribe('audio.mp3', regroup=False)
 )
 result2 = model.transcribe('audio.mp3', regroup='sp=.* /。/?/？/,/，_sg=.5_mg=.15+3_sp=.* /。/?/？')
 ```
-Any regrouping algorithm can be expressed as a string. Please feel free share your strings [here](https://github.com/jianfch/stable-ts/discussions/162)
-#### Regrouping Methods
+모든 재결합 알고리즘(regrouping algorithm)은 문자열로 표현될 수 있습니다. [이곳](https://github.com/jianfch/stable-ts/discussions/162)에서 자유롭게 공유하세요.
+#### 재결합 방법(Regrouping Methods)
 - [regroup](https://github.com/jianfch/stable-ts/blob/7c6953526dce5d9058b23e8d0c223272bf808be7/stable_whisper/result.py#L808-L854)
 - [split_by_gap()](https://github.com/jianfch/stable-ts/blob/7c6953526dce5d9058b23e8d0c223272bf808be7/stable_whisper/result.py#L526-L543)
 - [split_by_punctuation()](https://github.com/jianfch/stable-ts/blob/7c6953526dce5d9058b23e8d0c223272bf808be7/stable_whisper/result.py#L579-L595)
@@ -141,19 +141,19 @@ Any regrouping algorithm can be expressed as a string. Please feel free share yo
 - [merge_by_punctuation()](https://github.com/jianfch/stable-ts/blob/7c6953526dce5d9058b23e8d0c223272bf808be7/stable_whisper/result.py#L599-L624)
 - [merge_all_segments()](https://github.com/jianfch/stable-ts/blob/7c6953526dce5d9058b23e8d0c223272bf808be7/stable_whisper/result.py#L630-L633)
 
-### Locating Words
-You can locate words with regular expression.
+### 단어 특정(Locating Words)
+정규식을 사용하면 특정 단어의 위치를 찾을 수 있습니다.
 ```python
-# Find every sentence that contains "and"
+# "and"를 포함하는 모든 문장을 검색
 matches = result.find(r'[^.]+and[^.]+\.')
-# print the all matches if there are any
+# 검색결과가 존재한다면 전부 출력
 for match in matches:
   print(f'match: {match.text_match}\n'
         f'text: {match.text}\n'
         f'start: {match.start}\n'
         f'end: {match.end}\n')
   
-# Find the word before and after "and" in the matches
+# 검색결과 중에서 "and" 앞과 뒤에 위치하는 단어를 찾음
 matches = matches.find(r'\s\S+\sand\s\S+')
 for match in matches:
   print(f'match: {match.text_match}\n'
@@ -161,29 +161,29 @@ for match in matches:
         f'start: {match.start}\n'
         f'end: {match.end}\n')
 ```
-Parameters: 
+파라미터: 
 [find()](https://github.com/jianfch/stable-ts/blob/d30d0d1cfb5b17b4bf59c3fafcbbd21e37598ab9/stable_whisper/result.py#L898-L913)
 
-### Boosting Performance
-* One of the methods that Stable-ts uses to increase timestamp accuracy 
-and reduce hallucinations is silence suppression, enabled with `suppress_silence=True` (default).
-This method essentially suppresses the timestamps where the audio is silent or contain no speech
-by suppressing the corresponding tokens during inference and also readjusting the timestamps after inference. 
-To figure out which parts of the audio track are silent or contain no speech, Stable-ts supports non-VAD and VAD methods.
-The default is `vad=False`. The VAD option uses [Silero VAD](https://github.com/snakers4/silero-vad) (requires PyTorch 1.12.0+). 
-See [Visualizing Suppression](#visualizing-suppression).
-* The other method, enabled with `demucs=True`, uses [Demucs](https://github.com/facebookresearch/demucs)
-to isolate speech from the rest of the audio track. Generally best used in conjunction with silence suppression.
-Although Demucs is for music, it is also effective at isolating speech even if the track contains no music.
+### 퍼포먼스 개선(Boosting Performance)
+* Stable-ts가 타임스탬프 정확도를 개선하고 환각을 줄이기 위해 사용하는 방법 중 하나는 침묵억제(silence suppression)입니다.
+이 옵션은 `suppress_silence=True`로 사용할 수 있으며 기본적으로 켜져 있습니다. 
+추론과정에서 오디오가 침묵상태이거나 발화(speech)가 없을 경우 상응하는 토큰을 억제하여 
+타임스탬프의 생성을 막으며, 추론 이후 타임스탬프를 재조정하는 방법입니다. 
+침묵 혹은 발화가 없는 상태를 판별해 내기 위해서 Stable-ts는 non-VAD 방식과 VAD 방식을 지원합니다.
+기본설정은 `vad=False`입니다. VAD 옵션은 [Silero VAD](https://github.com/snakers4/silero-vad)를 사용합니다(PyTorch 1.12.0+ 필요). 
+[Visualizing Suppression](#visualizing-suppression)를 참고하세요.
+* `demucs=True` 옵션으로 사용할 수 있는 다른 방식은 발화를 오디오 트랙에서 격리하기 위해 [Demucs](https://github.com/facebookresearch/demucs)를 사용합니다.
+일반적으로 침묵억제 옵션과 같이 사용할 때 최선의 효과를 냅니다.
+비록 Demucs는 음악을 위한 기능이지만, 음악이 포함되어 있지 않다 해도 발화 부분을 격리할 때 효과적입니다.
 
 ### Visualizing Suppression
-You can visualize which parts of the audio will likely be suppressed (i.e. marked as silent). 
-Requires: [Pillow](https://github.com/python-pillow/Pillow) or [opencv-python](https://github.com/opencv/opencv-python).
+오디오의 어떤 부분이 억제될지(예를 들어 '침묵' 상태로 인식될지) 시각화해서 볼 수 있습니다.
+요구사항: [Pillow](https://github.com/python-pillow/Pillow) 혹은 [opencv-python](https://github.com/opencv/opencv-python).
 
 #### Without VAD
 ```python
 import stable_whisper
-# regions on the waveform colored red are where it will likely be suppressed and marked as silent
+# 파형 가운데 붉게 표시된 부분이 침묵 상태로 인식되어 억제(suppressed)될 가능성이 높은 곳임
 # [q_levels]=20 and [k_size]=5 (default)
 stable_whisper.visualize_suppression('audio.mp3', 'image.png', q_levels=20, k_size = 5) 
 ```
@@ -195,11 +195,11 @@ stable_whisper.visualize_suppression('audio.mp3', 'image.png', q_levels=20, k_si
 stable_whisper.visualize_suppression('audio.mp3', 'image.png', vad=True, vad_threshold=0.35)
 ```
 ![vad](https://user-images.githubusercontent.com/28970749/225825446-980924a5-7485-41e1-b0d9-c9b069d605f2.png)
-Parameters: 
+파라미터: 
 [visualize_suppression()](https://github.com/jianfch/stable-ts/blob/d30d0d1cfb5b17b4bf59c3fafcbbd21e37598ab9/stable_whisper/stabilization.py#L334-L355)
 
 ### Encode Comparison 
-You can encode videos similar to the ones in the doc for comparing transcriptions of the same audio. 
+동일한 오디오의 트랜스크립션을 비교하기 위해 문서에 있는 것과 유사한 비디오를 인코딩할 수 있습니다.
 ```python
 stable_whisper.encode_video_comparison(
     'audio.mp3', 
@@ -208,28 +208,28 @@ stable_whisper.encode_video_comparison(
     labels=['Example 1', 'Example 2']
 )
 ```
-Parameters: 
+파라미터: 
 [encode_video_comparison()](https://github.com/jianfch/stable-ts/blob/d30d0d1cfb5b17b4bf59c3fafcbbd21e37598ab9/stable_whisper/video_output.py#L10-L27)
 
 ### Tips
-- for reliable segment timestamps, do not disable word timestamps with `word_timestamps=False` because word timestamps are also used to correct segment timestamps
-- use `demucs=True` and `vad=True` for music but also works for non-music
-- if audio is not transcribing properly compared to whisper, try `mel_first=True` at the cost of more memory usage for long audio tracks
-- enable dynamic quantization to decrease memory usage for inference on CPU (also increases inference speed for large model);
+- 분절단위 타임스탬프를 제대로 얻으려면 `word_timestamps=False`를 사용해서 단어 타임스탬프를 끄는 것은 좋지 않습니다. 단어 타임스탬프는 분절 타임스탬프를 수정하는 데도 쓰이기 때문입니다.
+- `demucs=True`와 `vad=True`는 음악에 쓰이지만, 음악이 아닌 오디오(non-music)에도 쓸 수 있습니다.
+- 위스퍼(whisper)를 사용했을 때와 비교해서, 긴 오디오 트랙에서 자막이 제대로 추출되지 않는다면 더 많은 메모리를 사용하긴 하지만 `mel_first=True` 옵션을 시도해볼 수 있습니다.
+- dynamic quantization 기능을 켜면 CPU에서 추론할 때 메모리 요구량을 감소시킵니다. (또한 대형모델에서 추론 속도를 높여 줍니다);
 `--dq true`/`dq=True` for `stable_whisper.load_model`
 
 #### Multiple Files with CLI 
-Transcribe multiple audio files then process the results directly into SRT files.
+복수의 오디오 파일에서 자막을 추출하고, 곧바로 SRT 파일 형태로 출력합니다.
 ```commandline
 stable-ts audio1.mp3 audio2.mp3 audio3.mp3 -o audio1.srt audio2.srt audio3.srt
 ```
 
 ## Quick 1.X → 2.X Guide
 ### What's new in 2.0.0?
-- updated to use Whisper's more reliable word-level timestamps method. 
-- the more reliable word timestamps allow regrouping all words into segments with more natural boundaries.
-- can now suppress silence with [Silero VAD](https://github.com/snakers4/silero-vad) (requires PyTorch 1.12.0+)
-- non-VAD silence suppression is also more robust
+- Whisper의 더 신뢰도 높은 단어단위 타임스탬프 방식을 사용하도록 업데이트. 
+- 이를 통해서 더 자연스러운 방식으로 단어들을 재그룹화할 수 있게 됨.
+- [Silero VAD](https://github.com/snakers4/silero-vad)를 활용해 침묵억제가 가능해짐. (PyTorch 1.12.0+ 필요)
+- non-VAD 방식의 침묵억제(silence suppression)도 더욱 개선됨.
 ### Usage changes
 - `results_to_sentence_srt(result, 'audio.srt')` → `result.to_srt_vtt('audio.srt', word_level=False)` 
 - `results_to_word_srt(result, 'audio.srt')` → `result.to_srt_vtt('output.srt', segment_level=False)`
